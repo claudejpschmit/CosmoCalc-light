@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
     map<string, double> params;
            
     Fisher fish(params,"Fisher3.dat");
-    fish.F("ombh2","ombh2");
+    cout << "The result is = " << fish.F("ombh2","ombh2") << endl;
 
     return 0;
 }

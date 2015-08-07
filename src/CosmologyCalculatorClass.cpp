@@ -36,8 +36,8 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
 
 double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index)
 {
-    //return this->Cl_new(l,k1,k2,k_low,k_high,8, Pk_index, Tb_index, q_index);
-    return (k1+k2) * k1;
+    return this->Cl_new(l,k1,k2,k_low,k_high,8, Pk_index, Tb_index, q_index);
+    //return (k1+k2) * k1;
 }
 
 double CosmoCalc::Cl_noise(int l, double k1, double k2)
@@ -85,9 +85,9 @@ double CosmoCalc::H(double z)
 
 void CosmoCalc::update_q(map<string,double> params, int *q_index)
 {
-    cout << " -------- update q called --------- " << endl;
     bool do_calc = true;
     for (unsigned int i = 0; i < qs.size(); ++i) {
+        
         if (params["ombh2"] == qs[i].ombh2 && params["omnuh2"] == qs[i].omnuh2 &&\
                 params["omch2"] == qs[i].omch2 && params["omk"] == qs[i].omk &&\
                 params["hubble"] == qs[i].hubble && params["T_CMB"] == qs[i].t_cmb) {
@@ -97,7 +97,6 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
             break;
         }
     }
-    cout << "problem " << do_calc << endl;
 
     if (do_calc) {
         q_interpolator interp;
@@ -150,7 +149,6 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         interp.interpolator = interpolator;
         interp.interpolator_Hf = interpolator_Hf;
         
-        cout << " get to here " << endl;
         qs.push_back(interp);
         *q_index = qs.size() - 1;
     }
@@ -173,7 +171,6 @@ double CosmoCalc::r_interp(double z)
 
 void CosmoCalc::update_G21(map<string,double> params, int *Tb_index)
 {
-    cout << " -------- update G21 called --------- " << endl;
     bool do_calc = true;
     for (unsigned int i = 0; i < Tbs.size(); ++i) {
         if (params["ombh2"] == Tbs[i].ombh2 && params["omnuh2"] == Tbs[i].omnuh2 &&\
@@ -239,7 +236,6 @@ double CosmoCalc::Tb_interp(double z, int Tb_index)
 
 void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params, int *Pk_index)
 {
-    cout << " -------- update Pk called --------- " << endl;
     bool do_calc = true;
     for (unsigned int i = 0; i < Pks.size(); ++i) {
         if (params["ombh2"] == Pks[i].ombh2 && params["omnuh2"] == Pks[i].omnuh2 &&\

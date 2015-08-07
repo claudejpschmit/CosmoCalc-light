@@ -54,18 +54,17 @@ mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<do
     return Cl;
 }
 
-vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index, int *Tb_index, int *q_index, map<string,double> params, vector<double> krange)
+vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index, int *Tb_index, int *q_index, vector<double> krange)
 {
-    map<string,double> working_params = params;
+    map<string,double> working_params = fiducial_params;
     double h = this->var_params[param_key];
-    double x = working_params[param_key];
+    //double x = working_params[param_key];
+    double x = fiducial_params[param_key];
 
     vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
     vector<double> row;
     working_params[param_key] = x + 2 * h;
-    cout << "before updating model1" << endl;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    cout << "after updating model1" << endl;
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
         row.clear();
@@ -78,9 +77,7 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
     }
     working_params[param_key] = x + h;
 
-    cout << "before updating model2" << endl;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    cout << "after updating model2" << endl;
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
         row.clear();
@@ -114,7 +111,7 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
         }
         f4matrix.push_back(row);
     }
-
+    
     working_params[param_key] = x;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
@@ -133,7 +130,7 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
     return res;
 }
 
-double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index, int *Tb_index, int *q_index, map<string, double> params)
+double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index, int *Tb_index, int *q_index)
 {
     vector<vector<double>> Cl_alpha, Cl_beta;
     //This determines the size of the Cl matrices.
@@ -147,11 +144,11 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     mat Cl_inv = Cl;
 
     cout << "... derivative matrix calulation started" << endl;
-    Cl_alpha = this->Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index, q_index, params, krange);
+    Cl_alpha = this->Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index, q_index, krange);
     if (param_key1 == param_key2)
         Cl_beta = Cl_alpha;
     else
-        Cl_beta = this->Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index, q_index, params, krange);
+        Cl_beta = this->Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index, q_index, krange);
 
     cout << "-> The derivative matrices are done for l = " << l << endl;
     cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
@@ -182,27 +179,26 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
 double Fisher::F(string param_key1, string param_key2)
 {
     int Pk_index, Tb_index, q_index;
-    map<string,double> parameters = this->fiducial_params;
-    int lmax = 500;
+    int lmax = 15;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
 
     //first calculation outside so that all the dependencies are calculated.
     int l0 = 10;
     cout << "Computation of Fl starts for l = " << l0 << endl;
-    double fl = this->compute_Fl(l0, param_key1, param_key2, &Pk_index, &Tb_index, &q_index, parameters);
+    double fl = this->compute_Fl(l0, param_key1, param_key2, &Pk_index, &Tb_index, &q_index);
     cout << "fl with l = " << l0 << " is: " << fl << endl;
     Fl_file << l0 << " " << fl << endl;
     sum += (2*l0 + 1) * fl;
     
     // The following line parallelizes the code
-    #pragma omp parallel num_threads(2) private(Pk_index, Tb_index, q_index, parameters) 
+    #pragma omp parallel private(Pk_index, Tb_index, q_index) 
     {
         #pragma omp for reduction (+:sum)
         for (int l = l0+1; l <= lmax; ++l) {
             int Pk_index, Tb_index, q_index;
             cout << "Computation of Fl starts for l = " << l << endl;
-            double fl = this->compute_Fl(l, param_key1, param_key2, &Pk_index, &Tb_index, &q_index, parameters);
+            double fl = this->compute_Fl(l, param_key1, param_key2, &Pk_index, &Tb_index, &q_index);
             cout << "fl with l = " << l << " is: " << fl << endl;
             Fl_file << l << " " << fl << endl;
             sum += (2*l + 1) * fl;
