@@ -22,7 +22,6 @@ using namespace alglib;
 
 int main(int argc, char* argv[])
 {
-    
     map<string, double> params;
            
     Fisher fish(params,"Fisher3.dat");
