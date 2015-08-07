@@ -111,7 +111,8 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
         }
         f4matrix.push_back(row);
     }
-    
+   
+    // This is necessary for compute_Cl in compute_Fl.
     working_params[param_key] = x;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
