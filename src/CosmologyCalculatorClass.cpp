@@ -22,7 +22,6 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
 
     cout << "... precalculating Ml dependencies ..." << endl;
     this->update_q(fiducial_params, q_index);
-    this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
     cout << "... Dependencies calculated ..." << endl;
     cout << "... Initializing Pk interpolator ..." << endl;
     this->update_Pk_interpolator_direct(this->fiducial_params, Pk_index);
@@ -36,10 +35,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
 
 double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index)
 {
-    //return (k1+k2)*k1*Tb_interp(8.0,Tb_index) * Pk_interp(0.03, 7.0, Pk_index) * q_interp(8.0,q_index) *\
-    //    Hf_interp(9.0) * r_interp(8.8) * qs[q_index].h;
     return this->Cl_new(l,k1,k2,k_low,k_high,8, Pk_index, Tb_index, q_index);
-    //return (k1+k2) * k1;
 }
 
 double CosmoCalc::Cl_noise(int l, double k1, double k2)
@@ -73,16 +69,6 @@ CosmoCalc::~CosmoCalc()
 {
     delete CAMB;
     delete G21;
-}
-
-double CosmoCalc::D_C(double z)
-{
-    return this->D_H * this->Z(z);
-}
-
-double CosmoCalc::H(double z)
-{
-    return this->H_0 * this->E(z);
 }
 
 void CosmoCalc::update_q(map<string,double> params, int *q_index)
@@ -341,9 +327,7 @@ double CosmoCalc::Cl_new(int l, double k1, double k2, double k_low,\
                 return kappa*kappa * sP * sPp * this->sph_bessel_camb(l,kappa*q) *\
                     this->sph_bessel_camb(l,kappa*qp);
             };
-            //cout << "simps integral" << endl;
             double integral = integrate_simps(integrand3, lower_kappa_bound, a, steps);
-            //cout << "simps integral done" << endl;
             double integral3;
             
             Levin LEVIN(a, k_high);
@@ -355,13 +339,11 @@ double CosmoCalc::Cl_new(int l, double k1, double k2, double k_low,\
                 return kappa*kappa * sP1 * sPp1;     
             };
 
-            //cout << "Levin integral" << endl;
             if (z == zp)
                 integral3 = LEVIN.integrate_2sphj_1r(foo,q,l,n_levin);
             else
                 integral3 = LEVIN.integrate_2sphj_2r(foo,q,qp,l,n_levin);
-            //cout << "Levin integral done" << endl;
-            //delete LEVIN;
+            
             integral3 += integral;
             return rp*rp / (Hf_interp(zp)*1000.0) * this->Tb_interp(zp, Tb_index) *\
                 this->sph_bessel_camb(l,k2*rp) * integral3;

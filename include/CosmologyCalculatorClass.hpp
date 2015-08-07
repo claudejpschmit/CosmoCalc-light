@@ -31,14 +31,12 @@ class CosmoCalc : public CosmoBasis {
         double Cl_new(int l, double k1, double k2, double k_low,\
                 double k_high, int n_levin, int Pk_index, int Tb_index, int q_index);
         double Cl_noise(int l, double k1, double k2);
-        double D_C(double z);
  
-        double H(double z);
-  
         double Pk_interp(double k, double z, int Pk_index);
         double Tb_interp(double z, int Tb_index);
 
-        double Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
+        double Cl(int l, double k1, double k2, double k_low, double k_high,\
+                int Pk_index, int Tb_index, int q_index);
         
     protected:
 
