@@ -121,7 +121,7 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
             z = this->zmin_Ml + n * this->stepsize_Ml;
             xs[n] = z;
     
-            auto integrand = [&](double x){
+            auto integrand = [&](double z){
                 return 1/sqrt(O_V2 + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) + O_k2 * pow(1+z,2));
             };
             double Z = integrate(integrand, 0.0, z, 1000, simpson());
